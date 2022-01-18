@@ -1,0 +1,19 @@
+{
+  "name": "server-training",
+  "version": "1.0.0",
+  "description": "ama-romach server training - node.js",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/IdanKatzav/server-training.git"
+  },
+  "author": "Idan Katzav",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/IdanKatzav/server-training/issues"
+  },
+  "homepage": "https://github.com/IdanKatzav/server-training#readme"
+}
