@@ -4,7 +4,8 @@
   "description": "ama-romach server training - node.js",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "ts-node src/server/server.ts"
   },
   "repository": {
     "type": "git",
@@ -15,5 +16,11 @@
   "bugs": {
     "url": "https://github.com/IdanKatzav/server-training/issues"
   },
-  "homepage": "https://github.com/IdanKatzav/server-training#readme"
+  "homepage": "https://github.com/IdanKatzav/server-training#readme",
+  "devDependencies": {
+    "@types/node": "^17.0.10",
+    "lib": "^4.3.3",
+    "ts-node": "^10.4.0",
+    "typescript": "^4.5.4"
+  }
 }
