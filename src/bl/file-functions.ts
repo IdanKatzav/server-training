@@ -1,4 +1,4 @@
-import { readFile, stat, Stats } from 'fs'
+import { readFile, stat } from 'fs'
 
 export const getLastFileUpdateTime = () => {
     return new Promise<string>((resolve, reject) => {
