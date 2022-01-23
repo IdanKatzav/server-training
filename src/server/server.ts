@@ -1,4 +1,4 @@
-import {server} from './controller';
+import { server } from './controller';
 
 
 const hostname = '127.0.0.1';

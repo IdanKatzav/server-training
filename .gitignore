@@ -4,7 +4,7 @@
 **/.idea/*.iws
 
 #node_modules
-./node_modules
+/node_modules
 
 # lock files
 *.lock
