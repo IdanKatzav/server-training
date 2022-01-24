@@ -22,5 +22,12 @@
     "lib": "^4.3.3",
     "ts-node": "^10.4.0",
     "typescript": "^4.5.4"
+  },
+  "dependencies": {
+    "koa": "^2.13.4",
+    "koa-respond": "^2.1.0",
+    "mongoose": "^6.1.7",
+    "nconf": "^0.11.3",
+    "winston": "^3.4.0"
   }
 }
