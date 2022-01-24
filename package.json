@@ -18,6 +18,9 @@
   },
   "homepage": "https://github.com/IdanKatzav/server-training#readme",
   "devDependencies": {
+    "@types/koa": "^2.13.4",
+    "@types/koa-bodyparser": "^4.3.5",
+    "@types/koa-router": "^7.4.4",
     "@types/node": "^17.0.10",
     "lib": "^4.3.3",
     "ts-node": "^10.4.0",
@@ -25,7 +28,9 @@
   },
   "dependencies": {
     "koa": "^2.13.4",
+    "koa-bodyparser": "^4.3.0",
     "koa-respond": "^2.1.0",
+    "koa-router": "^10.1.1",
     "mongoose": "^6.1.7",
     "nconf": "^0.11.3",
     "winston": "^3.4.0"
