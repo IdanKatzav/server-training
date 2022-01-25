@@ -1,40 +1,20 @@
 import winston from 'winston'
-import {logLevels} from "./log-levels";
+import { format, transports, colors, levels } from "./logger-properties";
 
-const LOG_LEVEL = 'info';
+const LOG_LEVEL = 'trace';
 
-const colors = {
-    fatal: 'bold red yellowBG',
-    error: 'bold red',
-    warning: 'bold yellow',
-    info: 'bold green',
-    debug: 'bold cyan',
-    trace: 'bold magenta',
+let Logger: winston.Logger;
+
+winston.addColors(colors);
+
+export const initLogger = () => {
+    Logger = winston.createLogger({
+        level: LOG_LEVEL,
+        levels,
+        format,
+        transports,
+    });
 }
-
-const transports = [
-    new winston.transports.Console(),
-    new winston.transports.File({
-        filename: 'logs/error.log',
-        level: 'error',
-    }),
-    new winston.transports.File({ filename: 'logs/all.log' }),
-]
-
-const format = winston.format.combine(
-    winston.format.timestamp({format: 'YYYY-MM-DD HH:mm:ss:ms'}),
-    winston.format.colorize({level: true}),
-    winston.format.printf(
-    (info) => `${info.timestamp} ${info.level}: ${info.message}`,
-    )
-);
-
-const Logger = winston.createLogger({
-    level: LOG_LEVEL,
-    levels: logLevels,
-    format,
-    transports,
-});
 
 export const logInfo = (message: string): any => {
     Logger.log('info', message);

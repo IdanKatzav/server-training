@@ -1,28 +1,22 @@
 import Router from "koa-router";
+import {getProducts, getSingleProduct, insertProducts, removeProduct, updateProduct} from "./routing-functions";
+import {gotHttpRequest} from "./middleware-functions";
 
 const routerOptions : Router.IRouterOptions = {
-    prefix: '/products'
+    prefix: '/products',
 }
 const productsRouter = new Router(routerOptions);
 
-productsRouter.get(`/`, async (ctx) =>{
+productsRouter.use(gotHttpRequest);
 
-});
+productsRouter.get(`/`, getProducts);
 
-productsRouter.post('/', async () => {
+productsRouter.post('/', insertProducts);
 
-});
+productsRouter.get(`/:name`, getSingleProduct);
 
-productsRouter.get(`/:id`, async () =>{
+productsRouter.put(`/:name`, updateProduct);
 
-});
-
-productsRouter.put(`/:id`, async () =>{
-
-});
-
-productsRouter.delete(`/:id`, async () =>{
-
-});
+productsRouter.delete(`/:name`, removeProduct);
 
 export default productsRouter;
