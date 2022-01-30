@@ -1,20 +1,30 @@
 import Koa from "koa";
-import {logDebug, logError, logInfo, logTrace} from "../resources/logger/logger";
+import {logError, logInfo, logTrace} from "../resources/logger/logger";
 import {Product} from "../models/product";
+import {
+    deleteManyProductsFromDB,
+    deleteProductFromDB,
+    getProductFromDB,
+    getProductsFromDB,
+    insertProductToDB, updateProductInDB
+} from "../resources/mongoDB/mongoQueries";
 
 
 export const getProducts = async (ctx: Koa.Context) => {
     logInfo('Got request to get all the products in DB');
 
     try {
-        //TODO: add get function from db
-    } catch (err) {
-        logError(`Couldn't get products because: ${err} `);
-        ctx.status = 400;
+        const products = await getProductsFromDB();
+        ctx.status = 200;
+        ctx.body = {products};
+        logInfo(`The ${products} products sent to client`);
+        logTrace(`Products: ${JSON.stringify(products)}`);
+    } catch (err: any) {
+        logError(`Couldn't get products because: ${err}`);
+        ctx.status = err.statusCode || 500;
         ctx.message = `${err}`;
     }
-    ctx.status = 200;
-    ctx.message = "Idan";
+
 }
 
 export const getSingleProduct = async (ctx: Koa.Context) => {
@@ -22,14 +32,19 @@ export const getSingleProduct = async (ctx: Koa.Context) => {
     logInfo(`Got new request to get product with name: ${productName}`);
 
     try {
-        //TODO: add get function from db to specific product
-    } catch (err) {
-        logError(`Couldn't get products because: ${err} `);
-        ctx.status = 400;
-        ctx.message = `${err}`;
+        const product = await getProductFromDB(productName);
+        ctx.body = {product}
+        ctx.status = 200;
+
+        logInfo(`The ${productName} product sent to client`);
+        logTrace(`Product: ${JSON.stringify(product)}`);
+    } catch (err: any) {
+        const failureMessage = `Couldn't get ${productName} product because, ${err}`;
+        logError(failureMessage);
+        ctx.status = err.statusCode || 500;
+        ctx.message = failureMessage;
     }
-    ctx.status = 200;
-    ctx.message = "Idan";
+
 }
 
 export const insertProducts = async (ctx: Koa.Context) => {
@@ -38,42 +53,67 @@ export const insertProducts = async (ctx: Koa.Context) => {
     logTrace(`Product to insert: ${JSON.stringify(productToInsert)}`)
 
     try {
-        //TODO: create insert function to DB
-    } catch (err) {
-        logError(`Couldn't get products because: ${err} `);
-        ctx.status = 400;
-        ctx.message = `${err}`;
+        await insertProductToDB(productToInsert);
+        logInfo(`${productToInsert.name} product inserted to DB successfully`);
+        ctx.status = 201;
+        ctx.body = {product: productToInsert};
+    } catch (err: any) {
+        const failureMessage = `Couldn't insert ${productToInsert.name} product because ${err}`;
+        logError(failureMessage);
+        ctx.status = err.statusCode || 500;
+        ctx.message = failureMessage;
     }
-    ctx.status = 200;
-    ctx.message = "Idan";
+
 }
 
 export const removeProduct = async (ctx: Koa.Context) => {
     const productName = ctx.params.name;
     logInfo(`Got new request to delete product with name: ${productName}`);
     try {
+        let removedProduct = await deleteProductFromDB(productName);
+        logInfo(`${productName} product removed from DB successfully`);
 
-    } catch (err) {
-        logError(`Couldn't delete ${productName} product from DB because: ${err}`);
-        ctx.status = 400;
-        ctx.message = `${err}`;
+        ctx.status = 204;
+        ctx.body = {product: removedProduct};
+    } catch (err: any) {
+        const failureMessage = `Couldn't delete ${productName} product from DB because: ${err}`;
+        logError(failureMessage);
+        ctx.status = err.statusCode || 500;
+        ctx.message = failureMessage;
     }
-    ctx.status = 200;
-    ctx.message = "Idan";
 }
 
 export const updateProduct = async (ctx: Koa.Context) => {
-    const productToInsert: Product = ctx.request.body;
+    const productToUpdate: Product = ctx.request.body;
 
-    logInfo(`Got new Product to update in DB with name ${productToInsert.name}`);
-    logTrace(`Product to update: ${JSON.stringify(productToInsert)}`)
+    logInfo(`Got new Product to update in DB with name ${productToUpdate.name}`);
+    logTrace(`Product to update: ${JSON.stringify(productToUpdate)}`)
     try {
-         // TODO: implement update product
-    } catch (err) {
-        logError(`Couldn't update ${productToInsert.name} product because: ${err}`);
-        ctx.status = 400;
+        await updateProductInDB(productToUpdate);
+        const successMessage = `${productToUpdate.name} product inserted to DB successfully`;
+        logInfo(successMessage);
+        ctx.status = 201;
+        ctx.body = {product: productToUpdate};
+    } catch (err: any) {
+        logError(`Couldn't update ${productToUpdate.name} product because: ${err}`);
+        ctx.status = err.statusCode || 500;
         ctx.message = `${err}`;
     }
-    ctx.status = 200;
-    ctx.message = "Idan";
+}
+
+export const removeProducts = async (ctx: Koa.Context) => {
+    const productsToDelete: string[] = ctx.request.body;
+
+    logInfo(`Got new Products list to delete from DB with names ${productsToDelete}`);
+    logTrace(`Product to Delete: ${productsToDelete}`)
+    try {
+        await deleteManyProductsFromDB(productsToDelete);
+        logInfo(`${productsToDelete} product removed from DB successfully`);
+        ctx.status = 204;
+        ctx.body = {productsNames: productsToDelete};
+    } catch (err: any) {
+        logError(`Couldn't delete ${productsToDelete} products because: ${err}`);
+        ctx.status = err.statusCode || 500;
+        ctx.message = `${err}`;
+    }
 }
