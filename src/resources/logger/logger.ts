@@ -1,7 +1,8 @@
 import winston from 'winston'
 import { format, transports, colors, levels } from "./logger-properties";
+import nconf from "nconf";
 
-const LOG_LEVEL = 'trace';
+const logLevel = nconf.get('logger:logLevel');
 
 let Logger: winston.Logger;
 
@@ -9,7 +10,7 @@ winston.addColors(colors);
 
 export const initLogger = () => {
     Logger = winston.createLogger({
-        level: LOG_LEVEL,
+        level: logLevel,
         levels,
         format,
         transports,

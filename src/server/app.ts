@@ -7,7 +7,7 @@ const app = new Koa();
 
 
 app.use(bodyParser());
-app.use(respond())
-app.use(productsRouter.routes())
+app.use(respond());
+app.use(productsRouter.routes());
 
 export default app;

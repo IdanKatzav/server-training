@@ -7,7 +7,12 @@ import {
     removeProducts,
     updateProduct
 } from "./routing-functions";
-import {gotHttpRequest} from "./middleware-functions";
+import {
+    checkProductNamesArrayValidation,
+    checkProductNameValidation,
+    checkProductValidation,
+    gotHttpRequest
+} from "./middleware-functions";
 
 const routerOptions: Router.IRouterOptions = {
     prefix: '/products',
@@ -16,17 +21,18 @@ const productsRouter = new Router(routerOptions);
 
 productsRouter.use(gotHttpRequest);
 
+
 productsRouter.get(`/`, getProducts);
 
-productsRouter.post('/', insertProducts);
+productsRouter.post('/', checkProductValidation, insertProducts);
 
-productsRouter.get(`/:name`, getSingleProduct);
+productsRouter.get(`/:name`, checkProductNameValidation, checkProductNameValidation, getSingleProduct);
 
-productsRouter.put(`/:name`, updateProduct);
+productsRouter.put(`/:name`, checkProductValidation, updateProduct);
 
-productsRouter.delete(`/:name`, removeProduct);
+productsRouter.delete(`/:name`, checkProductNameValidation, removeProduct);
 
-productsRouter.delete(`/`, removeProducts);
+productsRouter.delete(`/`, checkProductNamesArrayValidation, removeProducts);
 
 
 export default productsRouter;
