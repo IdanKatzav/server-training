@@ -28,11 +28,6 @@ export const deleteProductFromDB = async (productName: string) => {
     logDebug(`${productName} product was deleted from ${dbName} DB from ${productsCollection} collection`);
 }
 
-// export const deleteManyProductsFromDB = async (productsNames: string []) => {
-//     await ProductModel.deleteMany({name: {$in: productsNames}});
-//     logDebug(`${productsNames} products was deleted from ${dbName} DB from ${productsCollection} collection`);
-// }
-
 export const deleteManyProductsFromDB = async (productsNames: string []) => {
     let session: ClientSession = await startSession();
 
