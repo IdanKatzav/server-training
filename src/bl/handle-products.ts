@@ -34,7 +34,7 @@ export const getSingleProduct = async (ctx: Koa.Context) => {
             logInfo(`The ${productName} product sent to client`);
             logTrace(`Product: ${JSON.stringify(product)}`);
         } else {
-            ctx.internalServerError(`Cannot get ${productName} product`);
+            ctx.notFound(`Cannot get ${productName} product`);
             logWarning(`${productName} product is not exist`);
         }
     } catch (err) {
@@ -45,7 +45,7 @@ export const getSingleProduct = async (ctx: Koa.Context) => {
 
 }
 
-export const insertProducts = async (ctx: Koa.Context) => {
+export const insertProduct = async (ctx: Koa.Context) => {
     const productToInsert: Product = ctx.request.body;
     logInfo(`Got new Product to insert to DB with name ${productToInsert.name}`);
     logTrace(`Product to insert: ${JSON.stringify(productToInsert)}`)
@@ -59,10 +59,9 @@ export const insertProducts = async (ctx: Koa.Context) => {
         logError(failureMessage);
         ctx.internalServerError();
     }
-
 }
 
-export const removeProduct = async (ctx: Koa.Context) => {
+export const deleteProduct = async (ctx: Koa.Context) => {
     const productName = ctx.params.name;
     logInfo(`Got new request to delete product with name: ${productName}`);
     try {
@@ -84,23 +83,28 @@ export const updateProduct = async (ctx: Koa.Context) => {
         await updateProductInDB(productToUpdate);
         logInfo(`${productToUpdate.name} product inserted to DB successfully`);
         ctx.ok({product: productToUpdate});
-    } catch (err: any) {
+    } catch (err) {
         logError(`Couldn't update ${productToUpdate.name} product because: ${err}`);
         ctx.internalServerError();
     }
 }
 
-export const removeProducts = async (ctx: Koa.Context) => {
+export const deleteProducts = async (ctx: Koa.Context) => {
     const productsToDelete: string[] = ctx.request.body;
 
+    let deleteError;
     logInfo(`Got new Products list to delete from DB with names ${productsToDelete}`);
     logTrace(`Product to Delete: ${productsToDelete}`)
     try {
-        await deleteManyProductsFromDB(productsToDelete);
+        deleteError = await deleteManyProductsFromDB(productsToDelete);
         logInfo(`${productsToDelete} product removed from DB successfully`);
         ctx.noContent();
-    } catch (err: any) {
-        logError(`Couldn't delete ${productsToDelete} products because: ${err}`);
+    } catch (err) {
+        deleteError = err;
+    }
+
+    if (deleteError) {
+        logError(`Couldn't delete ${productsToDelete} products because: ${deleteError}`);
         ctx.inernalServerError();
     }
 }

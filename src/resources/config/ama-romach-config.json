@@ -1,5 +1,6 @@
 {
   "mongoDB": {
+    "cluster": "cluster0.fn40e.mongodb.net",
     "auth": {
       "username": "idanKatzav",
       "password": "z010170"

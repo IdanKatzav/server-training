@@ -1,7 +1,8 @@
-import {model, Schema} from "mongoose";
+import {model, Schema, startSession} from "mongoose";
 import {Product} from "../../models/product";
-import {logDebug} from "../logger/logger";
+import {logDebug, logError} from "../logger/logger";
 import nconf from "nconf";
+import { ClientSession } from "mongodb";
 
 const productsCollection = nconf.get('mongoDB:collection');
 const dbName = nconf.get('mongoDB:db');
@@ -27,9 +28,27 @@ export const deleteProductFromDB = async (productName: string) => {
     logDebug(`${productName} product was deleted from ${dbName} DB from ${productsCollection} collection`);
 }
 
+// export const deleteManyProductsFromDB = async (productsNames: string []) => {
+//     await ProductModel.deleteMany({name: {$in: productsNames}});
+//     logDebug(`${productsNames} products was deleted from ${dbName} DB from ${productsCollection} collection`);
+// }
+
 export const deleteManyProductsFromDB = async (productsNames: string []) => {
-    await ProductModel.deleteMany({name: {$in: productsNames}});
-    logDebug(`${productsNames} products was deleted from ${dbName} DB from ${productsCollection} collection`);
+    let session: ClientSession = await startSession();
+
+    try {
+        session.startTransaction();
+        const deletePromises = productsNames.map(
+            (name) => (ProductModel.findOneAndDelete({name}, {session})));
+
+        await Promise.all(deletePromises);
+        await session.commitTransaction();
+    } catch (err) {
+        await session.abortTransaction();
+        return err;
+    } finally {
+        await session.endSession();
+    }
 }
 
 export const updateProductInDB = async (product: Product) => {
