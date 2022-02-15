@@ -1,8 +1,8 @@
 import {model, Schema, startSession} from "mongoose";
 import {Product} from "../../models/product";
-import {logDebug, logError} from "../logger/logger";
+import {logDebug} from "../logger/logger";
 import nconf from "nconf";
-import { ClientSession } from "mongodb";
+import {ClientSession} from "mongodb";
 
 const productsCollection = nconf.get('mongoDB:collection');
 const dbName = nconf.get('mongoDB:db');
@@ -52,13 +52,13 @@ export const updateProductInDB = async (product: Product) => {
 }
 
 export const getProductFromDB = async (productName: string): Promise<Product> => {
-    const product = await ProductModel.findOne({name: productName}) as Product;
+    const product = await ProductModel.findOne({name: productName}, {'_id': 0, '__v':0});
     logDebug(`Got ${productName} product from ${dbName} DB from ${productsCollection} collection`);
-    return product;
+    return product as Product;
 }
 
 export const getProductsFromDB = async (): Promise<Product[]> => {
-    const products = await ProductModel.find() as Product[];
+    const products = await ProductModel.find({},{'_id': 0, '__v':0}) as Product[];
     logDebug(`Got all product from ${dbName} DB from ${productsCollection} collection`);
     return products;
 }

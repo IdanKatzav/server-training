@@ -15,7 +15,7 @@ export const getProducts = async (ctx: Koa.Context) => {
         const products = await getProductsFromDB();
         logInfo(`The ${products} products sent to client`);
         logTrace(`Products: ${JSON.stringify(products)}`);
-        ctx.ok({products});
+        ctx.ok(products);
     } catch (err) {
         logError(`Couldn't get products because: ${err}`);
         ctx.internalServerError();
@@ -30,7 +30,7 @@ export const getSingleProduct = async (ctx: Koa.Context) => {
     try {
         const product = await getProductFromDB(productName);
         if(!!product) {
-            ctx.ok({product});
+            ctx.ok(product);
             logInfo(`The ${productName} product sent to client`);
             logTrace(`Product: ${JSON.stringify(product)}`);
         } else {

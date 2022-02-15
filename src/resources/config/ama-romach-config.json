@@ -25,7 +25,8 @@
   },
   "server": {
     "host": "localhost",
-    "port": 4321
+    "port": 4321,
+    "allowedList": ["http://localhost:4200"]
   },
   "isAlive": true
 }
