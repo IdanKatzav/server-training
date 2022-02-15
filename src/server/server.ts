@@ -1,10 +1,27 @@
-import { server } from './controller';
+import {setConfig} from "../resources/config/set-config";
 
+setConfig();
 
-const hostname = '127.0.0.1';
-const port = 4321;
+import nconf from "nconf";
+import {app} from "./app";
+import {initLogger, logError, logFatal, logInfo} from "../resources/logger/logger";
+import {createMongoConnection} from "../resources/mongoDB/db-connection";
 
+const hostname: string = nconf.get('server:host');
+const port: number = nconf.get('server:port');
 
-server.listen(port, hostname, () => {
-    console.log(`Server running at http://${hostname}:${port}/`);
+(async () => {
+    initLogger();
+    await createMongoConnection(() => {
+        logFatal(`Cannot reconnect mongoDB you have reached to the maximum retries time`);
+        nconf.set('isAlive', false);
+    });
+
+    app.listen(port, hostname, () => {
+        logInfo(`Server running at http://${hostname}:${port}/`);
+    });
+})()
+
+app.on('error', (err) => {
+    logError(`${err}`);
 });
