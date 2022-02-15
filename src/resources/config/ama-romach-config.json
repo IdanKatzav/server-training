@@ -1,0 +1,32 @@
+{
+  "mongoDB": {
+    "cluster": "cluster0.fn40e.mongodb.net",
+    "auth": {
+      "username": "idanKatzav",
+      "password": "z010170"
+    },
+    "collection": "products",
+    "db": "ama-romach-db",
+    "mongoConnectionOptions": {
+      "autoIndex": true,
+      "socketTimeoutMS": 4500,
+      "maxPoolSize": 30
+    },
+    "reconnectionOptions": {
+      "retries": 10,
+      "initialRetryTime": 300,
+      "maxRetryTime": 30000,
+      "multiplier": 2,
+      "factor": 0.2
+    }
+  },
+  "logger": {
+    "logLevel": "trace"
+  },
+  "server": {
+    "host": "localhost",
+    "port": 4321,
+    "allowedList": ["http://localhost:4200"]
+  },
+  "isAlive": true
+}
