@@ -5,7 +5,10 @@
       "username": "idanKatzav",
       "password": "z010170"
     },
-    "collection": "products",
+    "collection": {
+      "products": "products",
+      "stock": "stock"
+    },
     "db": "ama-romach-db",
     "mongoConnectionOptions": {
       "autoIndex": true,
@@ -26,7 +29,12 @@
   "server": {
     "host": "localhost",
     "port": 4321,
-    "allowedList": ["http://localhost:4200"]
+    "allowedList": [
+      "http://localhost:4200"
+    ]
   },
-  "isAlive": true
+  "isAlive": true,
+  "session": {
+    "ttl": 3600000
+  }
 }

@@ -1,21 +1,12 @@
-import {model, Schema, startSession} from "mongoose";
+import {startSession} from "mongoose";
 import {Product} from "../../models/product";
-import {logDebug} from "../logger/logger";
+import {logDebug} from "../../resources/logger/logger";
 import nconf from "nconf";
 import {ClientSession} from "mongodb";
+import {ProductModel} from "../../resources/mongoDB/mongo-models";
 
-const productsCollection = nconf.get('mongoDB:collection');
+const productsCollection = nconf.get('mongoDB:collection:products');
 const dbName = nconf.get('mongoDB:db');
-
-const productSchema = new Schema<Product>({
-    name: {type: String, required: true, unique: true, index: true},
-    description: {type: String, required: true},
-    image: {type: String, required: true},
-    price: {type: Number, required: true},
-    limit: {type: Number, required: false},
-}, {strict: true});
-
-const ProductModel = model<Product>('Product', productSchema, productsCollection);
 
 export const insertProductToDB = async (product: Product) => {
     const productDocument = new ProductModel(product);
@@ -46,19 +37,38 @@ export const deleteManyProductsFromDB = async (productsNames: string []) => {
     }
 }
 
-export const updateProductInDB = async (product: Product) => {
-    await ProductModel.findByIdAndUpdate({name: product.name}, product);
+export const updateProductInDB = async (product: Partial<Product>) => {
+    await ProductModel.findOneAndUpdate({name: product.name}, product);
     logDebug(`${product.name} products was updated in ${dbName} DB in ${productsCollection} collection`);
 }
 
+export const updateDBAfterCheckout = async (productsToUpdate: Product[]) :Promise<Product[]> => {
+    let session: ClientSession = await startSession();
+    try {
+        session.startTransaction();
+        const updatePromises = productsToUpdate.map(
+            (product) => (ProductModel.findOneAndUpdate({name: product.name}, product, {session})));
+
+        await Promise.all(updatePromises);
+        await session.commitTransaction();
+        return productsToUpdate;
+    } catch (err) {
+        await session.abortTransaction();
+        return err;
+    } finally {
+        await session.endSession();
+        logDebug(`All products ${productsToUpdate.map(productsToUpdate => productsToUpdate.name)} were updated in DB`);
+    }
+}
+
 export const getProductFromDB = async (productName: string): Promise<Product> => {
-    const product = await ProductModel.findOne({name: productName}, {'_id': 0, '__v':0});
+    const product = await ProductModel.findOne({name: productName}, {'_id': 0, '__v': 0});
     logDebug(`Got ${productName} product from ${dbName} DB from ${productsCollection} collection`);
     return product as Product;
 }
 
 export const getProductsFromDB = async (): Promise<Product[]> => {
-    const products = await ProductModel.find({},{'_id': 0, '__v':0}) as Product[];
+    const products = await ProductModel.find({}, {'_id': 0, '__v': 0}) as Product[];
     logDebug(`Got all product from ${dbName} DB from ${productsCollection} collection`);
     return products;
 }

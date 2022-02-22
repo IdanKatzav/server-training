@@ -6,8 +6,9 @@ import {
     deleteProductFromDB,
     getProductFromDB,
     getProductsFromDB,
-    insertProductToDB, updateProductInDB
-} from "../resources/mongoDB/mongoQueries";
+    insertProductToDB,
+    updateProductInDB
+} from "./queries/products-queries";
 
 export const getProducts = async (ctx: Koa.Context) => {
     logInfo('Got request to get all the products in DB');
@@ -47,13 +48,14 @@ export const getSingleProduct = async (ctx: Koa.Context) => {
 
 export const insertProduct = async (ctx: Koa.Context) => {
     const productToInsert: Product = ctx.request.body;
+
     logInfo(`Got new Product to insert to DB with name ${productToInsert.name}`);
     logTrace(`Product to insert: ${JSON.stringify(productToInsert)}`)
 
     try {
         await insertProductToDB(productToInsert);
         logInfo(`${productToInsert.name} product inserted to DB successfully`);
-        ctx.created({product: productToInsert});
+        ctx.created(productToInsert);
     } catch (err) {
         const failureMessage = `Couldn't insert ${productToInsert.name} product because ${err}`;
         logError(failureMessage);
@@ -82,7 +84,7 @@ export const updateProduct = async (ctx: Koa.Context) => {
     try {
         await updateProductInDB(productToUpdate);
         logInfo(`${productToUpdate.name} product inserted to DB successfully`);
-        ctx.ok({product: productToUpdate});
+        ctx.ok(productToUpdate);
     } catch (err) {
         logError(`Couldn't update ${productToUpdate.name} product because: ${err}`);
         ctx.internalServerError();

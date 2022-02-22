@@ -1,0 +1,1 @@
+export type ReleasedCache = Record<string, any>
