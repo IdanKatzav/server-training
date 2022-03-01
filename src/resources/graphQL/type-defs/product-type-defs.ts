@@ -19,12 +19,12 @@ export const productTypeDefs = gql`
     
     type Query {
         products: [Product]
-        product(productName: String!): Product        
+        product(name: String!): Product        
     }
     
     type Mutation {
         checkout: [Product]
-        deleteProduct(productName: String!): Product
+        deleteProduct(name: String!): Product
         updateProduct(product: InputProduct!): Product
     }
 `;

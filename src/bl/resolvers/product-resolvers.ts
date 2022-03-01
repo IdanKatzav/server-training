@@ -7,8 +7,6 @@ import {
     updateProductInDB
 } from "../queries/products-queries";
 import {Product} from "../../models/product";
-import {CartUpdate} from "../../models/cart-update";
-import {Session} from "koa-session";
 import Koa from "koa";
 import {deleteUserCart, getOccupiedItems, getUserCart} from "../../resources/cache/released-cache";
 import {Cart} from "../../models/cart";
@@ -19,11 +17,13 @@ const getProductsResolver = async () => {
     let products: Product[];
     try {
         products = await getProductsFromDB();
-        logTrace(`Products from DB: ${JSON.stringify(products)}`);
     } catch (err) {
         logError(`Got error while getting products from DB, because: ${err}`);
-        return err;
+        return new Error(`DB Error`);
     }
+
+    logTrace(`Products from DB: ${JSON.stringify(products)}`);
+
     products.map(product => product.limit -= getOccupiedItems(product.name));
     logInfo(`Got all the products with their stock statuses from DB`);
     logTrace(`Products after update occupied: ${JSON.stringify(products)}`);
@@ -35,45 +35,49 @@ const getProductResolver = async (productName: string) => {
     logInfo('Got request to get all the products in DB');
     try {
         product = await getProductFromDB(productName);
-        logTrace(`Product from DB: ${JSON.stringify(product)}`);
     } catch (err) {
         logError(`Got error while getting products from DB, because: ${err}`);
-        return err;
+        return new Error(`DB Error`);
+    }
+    if (!product) {
+        return new Error(`Not Found`);
     }
 
-    product.limit-= getOccupiedItems(productName);
+    logTrace(`Product from DB: ${JSON.stringify(product)}`);
+
+    product.limit -= getOccupiedItems(productName);
+
     logInfo(`Got all the products with their stock statuses from DB`);
     logTrace(`Product after update occupied: ${JSON.stringify(product)}`);
     return product;
 }
 
-const updateProduct = async (ctx: Koa.Context, productToUpdate: CartUpdate) => {
+const updateProduct = async (productToUpdate: Product) => {
     logInfo(`Got new Product to update with name ${productToUpdate.name}`);
     logTrace(`Product to update: ${JSON.stringify(productToUpdate)}`)
     try {
         await updateProductInDB(productToUpdate);
-        logInfo(`${productToUpdate.name} product updated successfully`);
-        ctx.ok(productToUpdate);
     } catch (err) {
         logError(`Couldn't update ${productToUpdate.name} product because: ${err}`);
-        ctx.internalServerError();
+        return new Error(`DB Error`);
     }
+    logInfo(`${productToUpdate.name} product updated successfully`);
+    return (productToUpdate);
 }
 
 const deleteProduct = async (ctx: Koa.Context, productName: string) => {
     logInfo(`Got new request to delete product with name: ${productName}`);
     try {
         await deleteProductFromDB(productName);
-        logInfo(`${productName} product removed from DB successfully`);
-        ctx.noContent();
     } catch (err) {
         logError(`Couldn't delete ${productName} product from DB because: ${err}`);
-        ctx.internalServerError();
+        return new Error(`DB Error`);
     }
+    logInfo(`${productName} product removed from DB successfully`);
+    ctx.noContent();
 }
 
-const checkout = async (userSession: Session) => {
-    const userId = userSession.userId;
+const checkout = async (userId: string) => {
     logInfo(`Start checkout for user: ${userId}`)
 
     let productsInStore: Product[];
@@ -82,7 +86,7 @@ const checkout = async (userSession: Session) => {
         productsInStore = await getProductsFromDB();
     } catch (err) {
         logError(`${errMessage} for user: ${userId}, ${err}`);
-        return new Error(errMessage);
+        return new Error('DB Error');
     }
 
     const userCart = getUserCart(userId);
@@ -90,44 +94,53 @@ const checkout = async (userSession: Session) => {
 
     if (result instanceof Error) {
         logError(`${errMessage} for user: ${userId}, ${result}`);
-        return new Error(errMessage);
     } else {
         deleteUserCart(userId);
-        userSession = null;
         logInfo(`Checkout for user: ${userId} executed successfully`)
-        return result;
     }
+    return result;
 }
 
-const updateProductsAfterCheckout = async (products: Product[], userCart: Cart): Promise<Product[]> => {
+const updateProductsAfterCheckout = async (products: Product[],
+                                           userCart: Cart): Promise<Product[] | Error> => {
     const items = Object.keys(userCart);
-    let productsToUpdate: Product[] = items.map((item) => {
+    let error: Error;
+    let productsToUpdate: Product[] | Error = items.map((item) => {
         const product = products.find(product => item === product.name)
-        product.limit -= userCart[item];
+        if (!!product.limit){
+            product.limit -= userCart[item];
+            if (product.limit < 0) {
+                error = new Error(`The ${product.name} product couldn't be consumed due to exceeding the quantity limit`);
+            }
+        }
         return product;
     });
 
-    productsToUpdate = await updateDBAfterCheckout(productsToUpdate);
+    if (!error) {
+        productsToUpdate = await updateDBAfterCheckout(productsToUpdate);
+        return productsToUpdate;
+    } else {
+        return error;
+    }
 
-    return productsToUpdate;
 }
 
 export const productResolvers = {
     Query: {
         products: getProductsResolver,
-        product: async (parent, args, context, info) => {
-            return await getProductResolver(args.productName);
+        product: async (parent, args) => {
+            return await getProductResolver(args.name);
         }
     },
     Mutation: {
-        updateProduct: async (parent, args, context, info) => {
-            return await updateProduct(context.ctx, args.product);
+        updateProduct: async (parent, args) => {
+            return await updateProduct(args.product);
         },
-        deleteProduct: async (parent, args, context, info) => {
-            return await deleteProduct(context.ctx, args.productName);
+        deleteProduct: async (parent, args, context) => {
+            return await deleteProduct(context.ctx, args.name);
         },
-        checkout: async (parent, args, context, info) => {
-            return await checkout(context.session);
+        checkout: async (parent, args, context) => {
+            return await checkout(context.ctx.headers.authorization);
         }
     }
 }

@@ -42,7 +42,7 @@ export const updateProductInDB = async (product: Partial<Product>) => {
     logDebug(`${product.name} products was updated in ${dbName} DB in ${productsCollection} collection`);
 }
 
-export const updateDBAfterCheckout = async (productsToUpdate: Product[]) :Promise<Product[]> => {
+export const updateDBAfterCheckout = async (productsToUpdate: Product[]) :Promise<Product[] | Error> => {
     let session: ClientSession = await startSession();
     try {
         session.startTransaction();
@@ -54,7 +54,7 @@ export const updateDBAfterCheckout = async (productsToUpdate: Product[]) :Promis
         return productsToUpdate;
     } catch (err) {
         await session.abortTransaction();
-        return err;
+        return new Error('DB Error');
     } finally {
         await session.endSession();
         logDebug(`All products ${productsToUpdate.map(productsToUpdate => productsToUpdate.name)} were updated in DB`);

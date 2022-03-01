@@ -1,7 +1,6 @@
 import { gql} from "apollo-server";
 
-export const CartTypeDefs = gql`
-  
+export const cartTypeDefs = gql`
     type CartUpdate {
         productName: String!
         action: CartAction!
@@ -20,10 +19,14 @@ export const CartTypeDefs = gql`
     }
     
     type Mutation {
-        updateCart(cartUpdate: InputCartUpdate!)
+        updateCart(cartUpdate: InputCartUpdate!): CartUpdate
     }
     
     type Subscription {
         updateCart: CartUpdate
     } 
+    
+    type Query {
+        dummy: String
+    }
 `;

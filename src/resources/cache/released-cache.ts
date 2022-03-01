@@ -43,6 +43,5 @@ export const getAll = (): ReleasedCache => {
 
 export const addUser = (user: string) => {
     releasedCache[user] = {};
-    console.log(releasedCache)
 }
 

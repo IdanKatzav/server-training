@@ -1,7 +1,7 @@
 export interface CartUpdate {
-    name: string,
+    productName: string,
     amount: number,
     action: actionType
 }
 
-type actionType = 'RELEASED' | 'OCCUPIED'
+type actionType = 'RELEASE' | 'OCCUPY'

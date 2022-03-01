@@ -1,5 +1,5 @@
 import nconf from "nconf";
-import {connect} from 'mongoose';
+import {connect, connection} from 'mongoose';
 import {logDebug, logError, logInfo} from "../logger/logger";
 import {Auth} from "../../models/auth";
 
@@ -45,3 +45,4 @@ const reconnectMongo = (previousRetryTime: number, retryCount: number = 0, callb
         }, newRetryTime);
     }
 }
+
